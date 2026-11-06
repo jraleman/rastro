@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="320" viewBox="0 0 640 320">
+  <g fill="none" stroke="#f5e1b5" stroke-width="12" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M96 204v-64l34-14 40-57h218l51 57 77 17 20 61h-54m-77 0H224m-75 0H96"/>
+    <path d="m182 85-28 43h247l-35-43M269 85v43m-155 38h38m336 0h31"/>
+    <circle cx="185" cy="204" r="36"/>
+    <circle cx="444" cy="204" r="36"/>
+    <path d="M185 188v32m-16-16h32m243-16v32m-16-16h32"/>
+  </g>
+  <text x="320" y="302" text-anchor="middle" fill="#e4b54e" font-family="sans-serif" font-weight="700" font-size="48" letter-spacing="12">RASTRO</text>
+</svg>

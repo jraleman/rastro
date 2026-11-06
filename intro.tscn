@@ -1,0 +1,9 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="PackedScene" path="res://scenes/boot/intro.tscn" id="1_intro"]
+
+[node name="RastroIntro" instance=ExtResource("1_intro")]
+cards = Array[String](["Three cars. An open garage.\nEvery part is yours to try.", "Paint. Wheels. Suspension. Power.\nMake each car your own.", "Keep your builds for what comes next.\nFor now, enjoy the workshop."])
+hold = 2.2
+fade_in = 0.35
+fade_out = 0.3

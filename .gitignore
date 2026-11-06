@@ -1,0 +1,15 @@
+.godot/
+.import/
+/build/
+/exports/
+/captures/
+*.translation
+*.apk
+*.aab
+*.pck
+override.cfg
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*~
