@@ -47,6 +47,9 @@ var _locked := false
 var _ui_factor := 1.0
 var _interface_scale := 1.0
 var _current_car := Catalog.CAR_IDS[0]
+var help_host: HBoxContainer
+var camera_controls: HFlowContainer
+var view_help: Label
 
 
 func _ready() -> void:
@@ -85,7 +88,7 @@ func refresh(build: Dictionary, locked: bool) -> void:
 			control.editable = not locked
 	_height_value.text = "%+d mm" % int(build["ride_height_mm"])
 	var specs := Build.specifications(build)
-	_specs.text = (
+	_specs.tooltip_text = (
 		"%.0f kW  |  %.0f kW / tonne\n%.0f kg  |  %.0f mm clearance\n"
 		+ "Road grip %.2fx  |  Loose grip %.2fx\nSprings %.2fx  |  Damping %.2fx"
 	) % [
@@ -93,6 +96,10 @@ func refresh(build: Dictionary, locked: bool) -> void:
 		specs["clearance_mm"], specs["road_grip"], specs["loose_grip"],
 		specs["spring_scale"], specs["damping_scale"],
 	]
+	_specs.text = "%.0f kW / %.0f kg / %.0f mm" % [
+		specs["power_kw"], specs["mass_kg"], specs["clearance_mm"],
+	]
+	_specs.accessibility_description = _specs.tooltip_text
 	_reset.disabled = locked
 	_export.disabled = locked
 	_import.disabled = locked
@@ -104,6 +111,7 @@ func set_status(text: String, failed := false) -> void:
 	_status.text = text
 	_status.add_theme_color_override("font_color", Color("ffc4a0") if failed else Color("c6d9d9"))
 	_retry.visible = failed
+	_status.visible = failed
 
 
 func focus_car() -> void:
@@ -152,14 +160,17 @@ func _build_ui() -> void:
 	layout.add_theme_constant_override("separation", 20)
 	_margins.add_child(layout)
 	var header := HBoxContainer.new()
+	help_host = header
 	header.add_theme_constant_override("separation", 20)
 	layout.add_child(header)
 	var title := _label("RASTRO", 36)
+	title.hide()
 	title.autowrap_mode = TextServer.AUTOWRAP_OFF
 	title.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
 	title.add_theme_color_override("font_color", Color("e4b54e"))
 	header.add_child(title)
 	_subtitle = _label("THE GARAGE  /  Three cars. Your signature.", 22)
+	_subtitle.text = ""
 	_subtitle.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	header.add_child(_subtitle)
 	var pause := _button("Menu", "Open the shared pause menu, settings and main-menu navigation.")
@@ -180,6 +191,7 @@ func _build_ui() -> void:
 	view.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	_stage_column.add_child(view)
 	var view_actions := HFlowContainer.new()
+	camera_controls = view_actions
 	view_actions.add_theme_constant_override("h_separation", 8)
 	_stage_column.add_child(view_actions)
 	for entry: Dictionary in [
@@ -204,13 +216,14 @@ func _build_ui() -> void:
 	reset_view.pressed.connect(view.reset_view)
 	view_actions.add_child(reset_view)
 	_view_hint = _label("Drag to orbit. Wheel / pinch to zoom. All parts are free.", 20)
+	view_help = _view_hint
 	_stage_column.add_child(_view_hint)
 	_editor = PanelContainer.new()
 	_editor.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	_body.add_child(_editor)
 	var panel_style := StyleBoxFlat.new()
-	panel_style.bg_color = Color("17242b", 0.97)
-	panel_style.border_color = Color("506368")
+	panel_style.bg_color = Color("17242b", 0.22)
+	panel_style.border_color = Color("506368", 0.35)
 	panel_style.set_border_width_all(1)
 	panel_style.set_content_margin_all(24)
 	panel_style.set_corner_radius_all(14)
@@ -449,7 +462,7 @@ func _layout() -> void:
 	view.custom_minimum_size.y = 135.0 / _interface_scale
 	Responsive.apply_margins(_margins, frame, Vector2(0.018, 0.025),
 		Vector2(14, 12), Vector2(44, 32))
-	_subtitle.text = "THE GARAGE  /  Three cars. Your signature." if frame.x > 900 else ""
+	_subtitle.text = ""
 	_editor.custom_minimum_size.x = 0 if portrait else clampf(frame.x * 0.33, 440, 640)
 	_editor.size_flags_horizontal = Control.SIZE_EXPAND_FILL if portrait else Control.SIZE_FILL
 	_stage_column.custom_minimum_size.y = maxf(220, frame.y * 0.30) if portrait else 0

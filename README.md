@@ -52,6 +52,8 @@ other cars stay unchanged. The parts panel scrolls, including with focused
 keyboard/gamepad controls. Physical touch targets and text adapt from portrait
 phones through short landscape and ultrawide windows, including Interface size.
 Idle inspection is static; Reduced motion does not prevent manual inspection.
+**Help** reveals camera buttons and guidance. Part/paint editing, primary actions
+and save failures remain visible without opening it.
 
 ## Saves
 

@@ -41,6 +41,10 @@ func _build_playfield() -> void:
 	_garage.pause_requested.connect(open_pause_menu)
 	_garage.retry_requested.connect(_retry_save)
 	_garage.modal_opened.connect(_release_controls)
+	mount_hud_help(_garage.help_host)
+	_hud_help_button.custom_minimum_size = Vector2.ONE * 66
+	register_hud_controls(_garage.camera_controls, _garage._layout, false)
+	register_hud_controls(_garage.view_help, _garage._layout, false)
 	_save_timer = Timer.new()
 	_save_timer.one_shot = true
 	_save_timer.wait_time = 0.35
