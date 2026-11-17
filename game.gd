@@ -28,6 +28,7 @@ static func manifest() -> GameManifest:
 	game.stats_url = "https://deskcansaw.com"
 	game.theme = GameTheme.new()
 	game.theme.logo_texture_path = "res://games/rastro/assets/logo.svg"
+	game.theme.cover_texture_path = "res://games/rastro/assets/cover.png"
 	game.theme.accent = Color("e4b54e")
 	game.theme.light = Color("f5e1b5")
 	game.theme.plaque_color = Color("203237")
