@@ -79,6 +79,9 @@ func _run() -> void:
 			view.call("reset_view")
 			await process_frame
 			await RenderingServer.frame_post_draw
+			var swatch := viewport.find_child("LivePaintSwatch", true, false) as MeshInstance3D
+			_expect(swatch != null and (swatch.material_override as StandardMaterial3D).albedo_color
+				== Catalog.paint_color(id, build["paint_id"]), "The workshop swatch must match the selected paint.")
 			_expect(viewport.own_world_3d and viewport.world_3d != get_root().world_3d,
 				"Rastro must render its own isolated 3D workshop.")
 			var car_bounds: AABB = rig.call("local_bounds")

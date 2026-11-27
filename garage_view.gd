@@ -3,6 +3,7 @@ extends Control
 ## An isolated Compatibility workshop; gestures only own contacts begun on this view.
 
 const Rig = preload("res://games/rastro/car_rig.gd")
+const Catalog = preload("res://games/rastro/car_catalog.gd")
 const DEFAULT_YAW := 0.68
 const DEFAULT_PITCH := 0.28
 
@@ -13,6 +14,7 @@ var rig: Rig
 var camera: Camera3D
 var viewport: SubViewport
 var _world: Node3D
+var _sample_paint: StandardMaterial3D
 var _focus := Vector3(0, 0.9, 0)
 var _radius := 2.8
 var _dragging := false
@@ -60,6 +62,7 @@ func _ready() -> void:
 ## Restyling a car keeps the inspection angle instead of resetting every edit.
 func configure(build: Dictionary) -> void:
 	rig.configure(build)
+	_sample_paint.albedo_color = Catalog.paint_color(build["car_id"], build["paint_id"])
 	var bounds := rig.local_bounds()
 	_focus = rig.position + bounds.get_center()
 	_radius = bounds.size.length() * 0.5
@@ -181,7 +184,6 @@ func _build_workshop() -> void:
 	var floor_material := _material(Color("343f44"))
 	var dark := _material(Color("202c32"))
 	var pale := _material(Color("9faeb0"))
-	var gold := _material(Color("e4b54e"), 0.3)
 	var wall := _material(Color("43545a"))
 	_box(Vector3(38, 0.12, 38), Vector3(0, -0.07, 0), floor_material)
 	_box(Vector3(30, 5.5, 0.18), Vector3(0, 2.6, -14), wall)
@@ -196,12 +198,12 @@ func _build_workshop() -> void:
 	turntable.radial_segments = 96
 	var platform := MeshInstance3D.new()
 	platform.mesh = turntable
-	platform.material_override = _material(Color("29353c"), 0.25)
+	var dial := ShaderMaterial.new()
+	dial.shader = preload("res://games/rastro/assets/alignment_dial.gdshader")
+	platform.material_override = dial
 	platform.position.y = 0.04
 	_world.add_child(platform)
 	for side: float in [-1, 1]:
-		_box(Vector3(5.5, 0.008, 0.045), Vector3(0, 0.085, side * 1.65), gold)
-		_box(Vector3(0.045, 0.008, 3.3), Vector3(side * 2.75, 0.085, 0), gold)
 		_box(Vector3(0.15, 3.6, 0.15), Vector3(side * 5, 1.8, -4.8), dark)
 		_box(Vector3(2.5, 0.08, 0.35), Vector3(side * 3.5, 4.3, -1.5), pale)
 	_box(Vector3(5.5, 0.15, 0.85), Vector3(-1.5, 1.1, -6.0), pale)
@@ -214,18 +216,59 @@ func _build_workshop() -> void:
 			Vector3(3.5, 0.20 + drawer * 0.22, -5.25), pale)
 	var sign := Label3D.new()
 	sign.text = "R A S T R O\nTHE GARAGE"
-	sign.font_size = 100
+	sign.font_size = 76
 	sign.pixel_size = 0.0045
-	sign.position = Vector3(-1.5, 3.1, -7)
+	sign.position = Vector3(-4.6, 3.04, -6.02)
 	sign.modulate = Color("f0dfb0")
 	sign.no_depth_test = false
 	_world.add_child(sign)
+	var detail := preload("res://scripts/miniature_detail.gd").new()
+	var ink := Color("23383f")
+	var cream := Color("9c9d89")
+	detail.box(sign.position - Vector3(0, 0, 0.08), Vector3(2.52, 0.96, 0.09), ink)
+	detail.box(Vector3(-1.54, 1.96, -6.18), Vector3(4.9, 1.50, 0.10), ink)
 	for tool in 7:
-		_box(Vector3(0.04, 0.30 + float(tool % 3) * 0.06, 0.04),
-			Vector3(-3.4 + tool * 0.5, 1.65, -6.1), gold)
+		var x := -3.45 + tool * 0.58
+		var length := 0.47 + float(tool % 3) * 0.13
+		var base := Vector3(x, 1.50, -6.1)
+		detail.rod(base, base + Vector3.UP * length, 0.039, cream)
+		for side: float in [-1, 1]:
+			detail.rod(base + Vector3.UP * length,
+				base + Vector3(side * 0.09, length + 0.10, 0), 0.035, cream)
+	for side: float in [-1, 1]:
+		var bay := Vector3(side * 6.3, 2.49, -13.82)
+		detail.box(bay, Vector3(8.7, 3.6, 0.18), ink)
+		for pane in 4:
+			detail.box(bay + Vector3(-3.15 + pane * 2.10, 0.1, 0.12),
+				Vector3(1.99, 2.91, 0.075), Color("3a5259").darkened(0.08 * (pane % 2)))
+		detail.box(bay + Vector3(0, -0.35, 0.19), Vector3(8.50, 0.10, 0.07), ink)
+		detail.box(bay + Vector3(0, -1.82, 0.18), Vector3(8.94, 0.19, 0.26), Color("c98959"))
+	detail.attach(_world, "WorkshopGlazingAndToolBoard")
+	_paint_station()
 
 
-func _box(size_m: Vector3, at: Vector3, material: Material) -> void:
+func _paint_station() -> void:
+	# The left wall is seen obliquely behind the turntable; its sample faces the car.
+	var rack := preload("res://scripts/miniature_detail.gd").new()
+	var at := Vector3(-7.2, 0, -1.05)
+	var slate := Color("344c52")
+	var nickel := Color("94a7a3")
+	rack.box(at + Vector3.UP * 1.35, Vector3(0.88, 2.70, 2.56), slate)
+	rack.box(at + Vector3(0.49, 2.35, 0), Vector3(0.28, 0.19, 2.78), nickel)
+	for shelf in 2:
+		var y := 0.43 + shelf * 0.69
+		rack.box(at + Vector3(0.47, y, 0), Vector3(0.61, 0.11, 2.31), nickel)
+		for pot in 3:
+			var foot := at + Vector3(0.50, y + 0.07, (pot - 1) * 0.64)
+			rack.rod(foot, foot + Vector3.UP * 0.38, 0.205,
+				[Color("9b6655"), Color("789894"), Color("c5aa78")][(pot + shelf) % 3])
+			rack.rod(foot + Vector3.UP * 0.38, foot + Vector3.UP * 0.43, 0.218, nickel)
+	rack.attach(_world, "PaintMixingBench")
+	_sample_paint = _material(Color.WHITE, 0.26)
+	_box(Vector3(0.14, 0.45, 1.91), at + Vector3(0.47, 1.97, 0), _sample_paint).name = "LivePaintSwatch"
+
+
+func _box(size_m: Vector3, at: Vector3, material: Material) -> MeshInstance3D:
 	var mesh := BoxMesh.new()
 	mesh.size = size_m
 	var instance := MeshInstance3D.new()
@@ -233,6 +276,7 @@ func _box(size_m: Vector3, at: Vector3, material: Material) -> void:
 	instance.position = at
 	instance.material_override = material
 	_world.add_child(instance)
+	return instance
 
 
 static func _material(color: Color, metallic := 0.0) -> StandardMaterial3D:
